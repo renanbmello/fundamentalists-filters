@@ -1,101 +1,81 @@
-import Image from "next/image";
+"use client"
+import { useState, FC } from 'react';
+import Form from '../components/Form';
+import Explanation from '../components/Explanation';
+import Loading from '../components/Loading';
+import Results from '../components/Results';
+import api from '../services/api';
+import { Filters } from '../types/filters';
+import { BacktestResults } from '../types/results';
+// import axios from 'axios';
 
-export default function Home() {
+const Home: FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [tickers, setTickers] = useState<string[]>([]);
+  const [backtestResults, setBacktestResults] = useState<BacktestResults | null>(null);
+
+  const handleFormSubmit = async (filters: Filters) => {
+    setLoading(true);
+    try {
+      console.log(filters)
+      const response = await api.post('/empresas_perenes', { filters });
+      // const response = await axios.post("http://127.0.0.1:5000/empresas_perenes", {filters}
+
+      // )
+      const filteredTickers = response.data;
+      console.log(response.data)
+      setTickers(filteredTickers);
+
+      const backtestResponse = await api.post('/backtest', { tickers: filteredTickers });
+      setBacktestResults(backtestResponse.data);
+    } catch (error) {
+      console.error('Erro ao obter dados:', error);
+    }
+    setLoading(false);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-[#121212] flex flex-col items-center">
+      {/* Cabeçalho */}
+      <header className="bg-[#121212] shadow w-full">
+        <div className="max-w-7xl mx-auto py-4 px-6">
+          <h1 className="text-2xl font-bold text-center">Filtros Fundamentalistas</h1>
+        </div>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Conteúdo principal */}
+      <main className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+        {/* Caixa com bordas arredondadas */}
+        <div className="bg-[#202020] p-6 rounded-lg shadow-lg">
+          {/* Formulário e Explicação */}
+          <div className="flex flex-col lg:flex-row lg:space-x-8">
+            {/* Formulário */}
+            <div className="w-full lg:w-1/2">
+              <Form onSubmit={handleFormSubmit} loading={loading} />
+            </div>
+            {/* Explicação */}
+            <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
+              <Explanation />
+            </div>
+          </div>
+        </div>
+
+        {/* Estado de carregamento ou resultados */}
+        <div className="mt-6 w-full">
+          {loading && (
+            <div className="bg-[#202020] p-6 rounded-lg shadow-lg">
+              <Loading />
+            </div>
+          )}
+          {!loading && tickers.length > 0 && backtestResults && (
+            <div className="bg-[#202020] p-6 rounded-lg shadow-lg">
+              <Results tickers={tickers} backtestResults={backtestResults} />
+            </div>
+          )}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
-}
+};
+
+export default Home;
