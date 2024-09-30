@@ -9,9 +9,9 @@ interface FormProps {
 const defaultFilters: Filters = {
     pl: [0, 15],
     pvp: [0, 1],
-    dy: [0.04, 100],
-    mrgliq: [0.10, 100],
-    roe: [0.10, 100],
+    dy: [0.04, 1],
+    mrgliq: [0.10, 1],
+    roe: [0.10, 1],
     divbpatr: [0, 1],
 };
 
